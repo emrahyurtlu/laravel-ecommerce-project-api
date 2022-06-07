@@ -25,15 +25,11 @@ use Illuminate\Support\Facades\Route;
 Route::group(["prefix" => "v1"], function () {
 
     // Public Routes
-    Route::get('/', [HomeController::class, 'index']);
+    Route::get('/home', [HomeController::class, 'index']);
     Route::get('/kategori/{category:slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
 
-    Route::get("/giris", [AuthController::class, 'showSignInForm']);
-    Route::post("/giris", [AuthController::class, 'signIn']);
-
-    Route::get("/uye-ol", [AuthController::class, 'showSignUpForm']);
     Route::post("/uye-ol", [AuthController::class, 'signUp']);
-
+    Route::post("/giris", [AuthController::class, 'signIn']);
     Route::get("/cikis", [AuthController::class, 'logout']);
 
     // Private Routes

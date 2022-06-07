@@ -13,33 +13,24 @@ use Illuminate\Support\Facades\Redirect;
 
 class AuthController extends Controller
 {
-    public function showSignInForm(): View
-    {
-        return view("frontend.auth.signin_form");
-    }
-
-    public function signIn(SignInRequest $request): RedirectResponse
+    public function signIn(SignInRequest $request)
     {
         $credentials = $request->only(["email", "password"]);
         $rememberMe = $request->get("remember-me", false);
 
         if (Auth::attempt($credentials, $rememberMe)) {
-            return redirect("/");
+            $token = Auth::user()->createToken("ecommerce")->plainTextToken;
+            $data = [
+                "user" => Auth::user(),
+                "token" => $token
+            ];
+            return response($data, 200);
         } else {
-            return redirect()->back()->withErrors(
-                [
-                    "email" => "Lütfen epostanızı kontrol ediniz.",
-                    "password" => "Lütfen şifrenizi kontrol ediniz.",
-                ]);
+            return response(["message" => "Kullanıcı bulunamadı. Lütfen girdiğiniz bilgileri kontrol ediniz."], 404);
         }
     }
 
-    public function showSignUpForm(): View
-    {
-        return view("frontend.auth.signup_form");
-    }
-
-    public function signUp(SignUpRequest $request): RedirectResponse
+    public function signUp(SignUpRequest $request)
     {
         $user = new User();
         $data = $this->prepare($request, $user->getFillable());
@@ -47,13 +38,20 @@ class AuthController extends Controller
         $user->fill($data);
         $user->save();
 
-        return Redirect::to("/giris");
+        $token = $user->createToken("ecommerce")->plainTextToken;
+
+        $data = [
+            "user" => $user,
+            "token" => $token
+        ];
+
+        return response($data, 201);
     }
 
     public function logout()
     {
-        Auth::logout();
-        return redirect("/");
+        request()->user()->currentAccessToken()->delete();
+        return response(["message" => "Çıkış yaptınız."]);
     }
 
 

@@ -14,6 +14,9 @@ class HomeController extends Controller
         $products = Product::all()->where("is_active", true);
         $categories = Category::all()->where("is_active", true);
 
+        if($products == null && $categories == null)
+            return response(["message" => "Sonuç bulunamadı"],404);
+
         $data = [
             "products" => $products,
             "categories" => $categories
