@@ -13,12 +13,16 @@ use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
-    private string $return_url = "/sepetim";
-
-    public function index(): View
+    public function index()
     {
         $cart = $this->getOrCreateCart();
-        return view("frontend.cart.index", ["cart" => $cart]);
+        $details = $this->getOrCreateCart()->details();
+
+        $data = [
+            "cart" => $cart,
+            "details" => $details
+        ];
+        return response($data);
     }
 
     /**
@@ -33,7 +37,7 @@ class CartController extends Controller
         $cart = Cart::firstOrCreate(
             ['user_id' => $user->user_id, 'is_active' => true],
             ['code' => Str::random(8)]
-        );
+        )->with('details')->get()->first();
         return $cart;
     }
 
@@ -42,9 +46,8 @@ class CartController extends Controller
      *
      * @param Product $product
      * @param int $quantity
-     * @return RedirectResponse
      */
-    public function add(Product $product, int $quantity = 1): RedirectResponse
+    public function add(Product $product, int $quantity = 1)
     {
         $cart = $this->getOrCreateCart();
         $cart->details()->create([
@@ -52,7 +55,13 @@ class CartController extends Controller
             "quantity" => $quantity,
         ]);
 
-        return redirect($this->return_url);
+        $details = $cart->details();
+
+        $data = [
+            "cart" => $cart,
+            "details" => $details
+        ];
+        return response($data);
     }
 
     /**
@@ -60,11 +69,16 @@ class CartController extends Controller
      * Remove cart detail from cart
      *
      * @param CartDetails $cartDetails
-     * @return RedirectResponse
      */
-    public function remove(CartDetails $cartDetails): RedirectResponse
+    public function remove(CartDetails $cartDetails)
     {
-        $cartDetails->delete();
-        return redirect($this->return_url);
+        $cart = $this->getOrCreateCart();
+        $details = $this->getOrCreateCart()->details();
+
+        $data = [
+            "cart" => $cart,
+            "details" => $details
+        ];
+        return response($data);
     }
 }
