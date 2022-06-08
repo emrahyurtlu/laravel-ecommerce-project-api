@@ -10,16 +10,17 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
     public function signIn(SignInRequest $request)
     {
         $credentials = $request->only(["email", "password"]);
-        $rememberMe = $request->get("remember-me", false);
 
-        if (Auth::attempt($credentials, $rememberMe)) {
-            $token = Auth::user()->createToken("ecommerce")->plainTextToken;
+        if (Auth::attempt($credentials)) {
+            $token = Auth::user()->createToken(str()->random(20))->plainTextToken;
             $data = [
                 "user" => Auth::user(),
                 "token" => $token
@@ -38,7 +39,7 @@ class AuthController extends Controller
         $user->fill($data);
         $user->save();
 
-        $token = $user->createToken("ecommerce")->plainTextToken;
+        $token = $user->createToken(str()->random(20))->plainTextToken;
 
         $data = [
             "user" => $user,
@@ -50,9 +51,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        Auth::logout();
-        //request()->user()->currentAccessToken()->delete();
-        return response(["message" => "Çıkış yaptınız."]);
+        return response(["message" => "Çıkış taptınız." ]);
     }
 
 

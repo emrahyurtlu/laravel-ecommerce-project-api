@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class CartController extends Controller
 {
@@ -33,6 +34,7 @@ class CartController extends Controller
      */
     private function getOrCreateCart(): Cart
     {
+        //PersonalAccessToken::findToken(request()->bearerToken());
         $user = Auth::user();
         $cart = Cart::firstOrCreate(
             ['user_id' => $user->user_id, 'is_active' => true],
@@ -50,10 +52,12 @@ class CartController extends Controller
     public function add(Product $product, int $quantity = 1)
     {
         $cart = $this->getOrCreateCart();
-        $cart->details()->create([
-            "product_id" => $product->product_id,
-            "quantity" => $quantity,
-        ]);
+
+        $cartDetail = new CartDetails();
+        $cartDetail->cart_id = $cart->cart_id;
+        $cartDetail->product_id = $product->product_id;
+        $cartDetail->quantity = $quantity;
+        $cartDetail->save();
 
         $details = $cart->details();
 

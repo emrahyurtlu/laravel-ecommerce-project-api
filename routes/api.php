@@ -35,7 +35,7 @@ Route::group(["prefix" => "v1"], function () {
     // Private Routes
     Route::group(["middleware" => "auth:sanctum"], function () {
         Route::get("/sepetim", [CartController::class, 'index']);
-        Route::post("/sepetim/ekle/{product}", [CartController::class, 'add']);
+        Route::post("/sepetim", [CartController::class, 'add']);
         Route::delete("/sepetim/sil/{cartDetails}", [CartController::class, 'remove']);
 
         Route::get("/satin-al", [CheckoutController::class, 'showCheckoutForm']);
