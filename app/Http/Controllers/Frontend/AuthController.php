@@ -6,11 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SignInRequest;
 use App\Http\Requests\SignUpRequest;
 use App\Models\User;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Request;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
@@ -49,10 +46,12 @@ class AuthController extends Controller
         return response($data, 201);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        return response(["message" => "Çıkış taptınız." ]);
+        $bearerToken = $request->bearerToken();
+        $token = PersonalAccessToken::findToken($bearerToken);
+        $token->delete();
+
+        return response(["message" => "Çıkış yaptınız."]);
     }
-
-
 }

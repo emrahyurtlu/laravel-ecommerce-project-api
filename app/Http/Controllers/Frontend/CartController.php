@@ -8,6 +8,7 @@ use App\Models\CartDetails;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -17,12 +18,13 @@ class CartController extends Controller
     public function index()
     {
         $cart = $this->getOrCreateCart();
-        $details = $this->getOrCreateCart()->details();
+        $details = $this->getCartDetails();
 
         $data = [
             "cart" => $cart,
             "details" => $details
         ];
+
         return response($data);
     }
 
@@ -34,13 +36,20 @@ class CartController extends Controller
      */
     private function getOrCreateCart(): Cart
     {
-        //PersonalAccessToken::findToken(request()->bearerToken());
-        $user = Auth::user();
+        $token = PersonalAccessToken::findToken(request()->bearerToken());
+        $user = $token->tokenable()->first();
+        //$user = Auth::user();
         $cart = Cart::firstOrCreate(
             ['user_id' => $user->user_id, 'is_active' => true],
             ['code' => Str::random(8)]
-        )->with('details')->get()->first();
+        );
         return $cart;
+    }
+
+    private function getCartDetails() {
+        $cart = $this->getOrCreateCart();
+        $details = CartDetails::all()->where("cart_id", $cart->cart_id);
+        return $details;
     }
 
     /**
@@ -49,15 +58,17 @@ class CartController extends Controller
      * @param Product $product
      * @param int $quantity
      */
-    public function add(Product $product, int $quantity = 1)
+    public function add(Request $request)
     {
+        $product_id = $request->get("product");
+        $quantity = $request->get("quantity");
+
         $cart = $this->getOrCreateCart();
 
-        $cartDetail = new CartDetails();
-        $cartDetail->cart_id = $cart->cart_id;
-        $cartDetail->product_id = $product->product_id;
-        $cartDetail->quantity = $quantity;
-        $cartDetail->save();
+        $cart->details()->create([
+            "product_id" => $product_id,
+            "quantity" => $quantity,
+        ]);
 
         $details = $cart->details();
 
