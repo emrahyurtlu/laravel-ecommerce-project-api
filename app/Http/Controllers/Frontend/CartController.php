@@ -38,7 +38,6 @@ class CartController extends Controller
     {
         $token = PersonalAccessToken::findToken(request()->bearerToken());
         $user = $token->tokenable()->first();
-        //$user = Auth::user();
         $cart = Cart::firstOrCreate(
             ['user_id' => $user->user_id, 'is_active' => true],
             ['code' => Str::random(8)]
@@ -61,7 +60,7 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $product_id = $request->get("product");
-        $quantity = $request->get("quantity");
+        $quantity = $request->get("quantity",1);
 
         $cart = $this->getOrCreateCart();
 
@@ -70,7 +69,7 @@ class CartController extends Controller
             "quantity" => $quantity,
         ]);
 
-        $details = $cart->details();
+        $details = $this->getCartDetails();
 
         $data = [
             "cart" => $cart,
@@ -85,10 +84,13 @@ class CartController extends Controller
      *
      * @param CartDetails $cartDetails
      */
-    public function remove(CartDetails $cartDetails)
+    public function remove(Request $request)
     {
+        $cartDetailId = $request->get("cart_detail_id");
+        CartDetails::find($cartDetailId)->delete();
+
         $cart = $this->getOrCreateCart();
-        $details = $this->getOrCreateCart()->details();
+        $details = $this->getCartDetails();
 
         $data = [
             "cart" => $cart,

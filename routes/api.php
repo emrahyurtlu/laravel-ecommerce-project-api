@@ -36,7 +36,7 @@ Route::group(["prefix" => "v1"], function () {
     Route::group(["middleware" => "auth:sanctum"], function () {
         Route::get("/sepetim", [CartController::class, 'index']);
         Route::post("/sepetim", [CartController::class, 'add']);
-        Route::delete("/sepetim/sil/{cartDetails}", [CartController::class, 'remove']);
+        Route::delete("/sepetim", [CartController::class, 'remove']);
 
         Route::get("/satin-al", [CheckoutController::class, 'showCheckoutForm']);
         Route::post("/satin-al", [CheckoutController::class, 'checkout']);
