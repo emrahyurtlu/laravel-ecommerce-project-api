@@ -6,10 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartDetails;
 use App\Models\Product;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -18,37 +17,27 @@ class CartController extends Controller
     public function index()
     {
         $cart = $this->getOrCreateCart();
-        $details = $this->getCartDetails();
-
-        $data = [
-            "cart" => $cart,
-            "details" => $details
-        ];
-
-        return response($data);
+        return response($cart);
     }
 
     /**
      *
      * Lists the cart content
      *
-     * @return Cart
+     * @return Builder|Model|object
      */
-    private function getOrCreateCart(): Cart
+    private function getOrCreateCart()
     {
         $token = PersonalAccessToken::findToken(request()->bearerToken());
         $user = $token->tokenable()->first();
+
         $cart = Cart::firstOrCreate(
             ['user_id' => $user->user_id, 'is_active' => true],
             ['code' => Str::random(8)]
         );
-        return $cart;
-    }
 
-    private function getCartDetails() {
-        $cart = $this->getOrCreateCart();
-        $details = CartDetails::all()->where("cart_id", $cart->cart_id);
-        return $details;
+        $eagerCart = Cart::with("details")->where("cart_id", $cart->cart_id)->first();
+        return $eagerCart;
     }
 
     /**
@@ -60,7 +49,7 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $product_id = $request->get("product");
-        $quantity = $request->get("quantity",1);
+        $quantity = $request->get("quantity", 1);
 
         $cart = $this->getOrCreateCart();
 
@@ -69,20 +58,15 @@ class CartController extends Controller
             "quantity" => $quantity,
         ]);
 
-        $details = $this->getCartDetails();
-
-        $data = [
-            "cart" => $cart,
-            "details" => $details
-        ];
-        return response($data);
+        return response($cart);
     }
 
     /**
      *
      * Remove cart detail from cart
      *
-     * @param CartDetails $cartDetails
+     * @param Request $request
+     * @return \Illuminate\Http\Response
      */
     public function remove(Request $request)
     {
@@ -90,12 +74,7 @@ class CartController extends Controller
         CartDetails::find($cartDetailId)->delete();
 
         $cart = $this->getOrCreateCart();
-        $details = $this->getCartDetails();
 
-        $data = [
-            "cart" => $cart,
-            "details" => $details
-        ];
-        return response($data);
+        return response($cart);
     }
 }
