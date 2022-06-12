@@ -26,7 +26,8 @@ Route::group(["prefix" => "v1"], function () {
 
     // Public Routes
     Route::get('/home', [HomeController::class, 'index']);
-    Route::get('/kategori/{category:slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
+    Route::get('/kategoriler/{category:slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'getCategory']);
+    Route::get('/kategoriler', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
 
     Route::post("/uye-ol", [AuthController::class, 'signUp']);
     Route::post("/giris", [AuthController::class, 'signIn']);

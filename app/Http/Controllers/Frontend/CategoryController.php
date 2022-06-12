@@ -4,14 +4,25 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
-    public function index(Category $category): View
+    public function index()
     {
         $allCategories = Category::all()->where("is_active", true);
 
-        return view("frontend.home.index", ["categories" => $allCategories, "products" => $category->products]);
+        if ($allCategories->count() == 0) {
+            return response($allCategories, 404);
+        }
+
+        return response($allCategories);
+    }
+
+    public function getCategory(Category $category)
+    {
+        if ($category == null)
+            return response($category, 404);
+
+        return response($category, 201);
     }
 }

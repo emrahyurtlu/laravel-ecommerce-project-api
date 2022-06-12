@@ -19,6 +19,12 @@ class Cart extends Model
         'is_active'
     ];
 
+    protected $hidden = [
+        'deleted_at',
+        'created_at',
+        'updated_at'
+    ];
+
     public function details()
     {
         return $this->hasMany(CartDetails::class, "cart_id", "cart_id");

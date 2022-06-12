@@ -18,6 +18,12 @@ class CartDetails extends Model
         'quantity',
     ];
 
+    protected $hidden = [
+      'deleted_at',
+      'created_at',
+      'updated_at'
+    ];
+
     public function product()
     {
         return $this->hasOne(Product::class, "product_id", "product_id");
